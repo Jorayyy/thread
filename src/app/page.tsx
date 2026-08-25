@@ -9,6 +9,16 @@ import { Truck, Shield, RotateCcw, Headphones } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  const firstImageSubquery = db
+    .select({
+      productId: productImages.productId,
+      url: productImages.url,
+      alt: productImages.alt,
+    })
+    .from(productImages)
+    .groupBy(productImages.productId)
+    .as("first_image");
+
   const featuredProducts = await db
     .select({
       id: products.id,
@@ -17,12 +27,12 @@ export default async function HomePage() {
       basePrice: products.basePrice,
       isFeatured: products.isFeatured,
       categoryName: categories.name,
-      imageUrl: productImages.url,
-      imageAlt: productImages.alt,
+      imageUrl: firstImageSubquery.url,
+      imageAlt: firstImageSubquery.alt,
     })
     .from(products)
     .leftJoin(categories, eq(products.categoryId, categories.id))
-    .leftJoin(productImages, eq(productImages.productId, products.id))
+    .leftJoin(firstImageSubquery, eq(products.id, firstImageSubquery.productId))
     .where(eq(products.isFeatured, true))
     .limit(8);
 
@@ -59,7 +69,7 @@ export default async function HomePage() {
                 </Button>
               </Link>
               <Link href="/categories">
-                <Button size="lg" className="bg-transparent text-white border-2 border-white hover:bg-white hover:text-gray-900">
+                <Button size="lg" variant="outline" className="!bg-transparent !text-white !border-2 !border-white hover:!bg-white hover:!text-gray-900">
                   Browse Categories
                 </Button>
               </Link>

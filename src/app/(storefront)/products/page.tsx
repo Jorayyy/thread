@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { products, categories, productImages, productVariants } from "@/db/schema";
+import { products, categories, productImages } from "@/db/schema";
 import { eq, desc, asc, and, like, sql } from "drizzle-orm";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductFilters } from "./product-filters";
@@ -51,6 +51,16 @@ export default async function ProductsPage({
       break;
   }
 
+  const firstImageSubquery = db
+    .select({
+      productId: productImages.productId,
+      url: productImages.url,
+      alt: productImages.alt,
+    })
+    .from(productImages)
+    .groupBy(productImages.productId)
+    .as("first_image");
+
   let fetchedProducts = await db
     .select({
       id: products.id,
@@ -59,12 +69,12 @@ export default async function ProductsPage({
       basePrice: products.basePrice,
       categoryId: products.categoryId,
       categoryName: categories.name,
-      imageUrl: productImages.url,
-      imageAlt: productImages.alt,
+      imageUrl: firstImageSubquery.url,
+      imageAlt: firstImageSubquery.alt,
     })
     .from(products)
     .leftJoin(categories, eq(products.categoryId, categories.id))
-    .leftJoin(productImages, eq(productImages.productId, products.id))
+    .leftJoin(firstImageSubquery, eq(products.id, firstImageSubquery.productId))
     .where(and(...conditions))
     .orderBy(orderByClause);
 
