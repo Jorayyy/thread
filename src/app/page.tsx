@@ -59,7 +59,7 @@ export default async function HomePage() {
                 </Button>
               </Link>
               <Link href="/categories">
-                <Button size="lg" className="bg-white/10 text-white border border-white/30 hover:bg-white/20">
+                <Button size="lg" className="bg-transparent text-white border-2 border-white hover:bg-white hover:text-gray-900">
                   Browse Categories
                 </Button>
               </Link>
